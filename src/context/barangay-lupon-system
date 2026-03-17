@@ -1,0 +1,59 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User, Complainant, Respondent, Case, Hearing, Settlement } from '../types';
+import { DB } from '../db/localDb';
+
+interface AppContextType {
+    currentUser: User | null;
+    setCurrentUser: (user: User | null) => void;
+    complainants: Complainant[];
+    setComplainants: React.Dispatch<React.SetStateAction<Complainant[]>>;
+    respondents: Respondent[];
+    setRespondents: React.Dispatch<React.SetStateAction<Respondent[]>>;
+    cases: Case[];
+    setCases: React.Dispatch<React.SetStateAction<Case[]>>;
+    hearings: Hearing[];
+    setHearings: React.Dispatch<React.SetStateAction<Hearing[]>>;
+    settlements: Settlement[];
+    setSettlements: React.Dispatch<React.SetStateAction<Settlement[]>>;
+}
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [currentUser, setCurrentUser] = useState<User | null>(() => {
+        const saved = localStorage.getItem('userSession'); // Assuming 'userSession' is the key for DB_KEYS.SESSION
+        return saved ? JSON.parse(saved) : null;
+    });
+    const [complainants, setComplainants] = useState<Complainant[]>(DB.complainants.getAll());
+    const [respondents, setRespondents] = useState<Respondent[]>(DB.respondents.getAll());
+    const [cases, setCases] = useState<Case[]>(DB.cases.getAll());
+    const [hearings, setHearings] = useState<Hearing[]>(DB.hearings.getAll());
+    const [settlements, setSettlements] = useState<Settlement[]>(DB.settlements.getAll());
+
+    // Sync with LocalStorage
+    useEffect(() => { DB.users.setSession(currentUser); }, [currentUser]);
+    useEffect(() => { DB.complainants.save(complainants); }, [complainants]);
+    useEffect(() => { DB.respondents.save(respondents); }, [respondents]);
+    useEffect(() => { DB.cases.save(cases); }, [cases]);
+    useEffect(() => { DB.hearings.save(hearings); }, [hearings]);
+    useEffect(() => { DB.settlements.save(settlements); }, [settlements]);
+
+    return (
+        <AppContext.Provider value={{
+            currentUser, setCurrentUser,
+            complainants, setComplainants,
+            respondents, setRespondents,
+            cases, setCases,
+            hearings, setHearings,
+            settlements, setSettlements
+        }}>
+            {children}
+        </AppContext.Provider>
+    );
+};
+
+export const useAppContext = () => {
+    const context = useContext(AppContext);
+    if (!context) throw new Error('useAppContext must be used within AppProvider');
+    return context;
+};

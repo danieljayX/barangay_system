@@ -1,0 +1,28 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: '#4f46e5',
+          light: '#6366f1',
+          dark: '#3730a3',
+        },
+        success: {
+          DEFAULT: '#059669',
+        },
+        warning: {
+          DEFAULT: '#cc9102',
+        },
+        danger: {
+          DEFAULT: '#dc2626',
+        }
+      }
+    },
+  },
+  plugins: [],
+}
